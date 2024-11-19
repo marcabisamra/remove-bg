@@ -10,7 +10,7 @@ import { getGPUTier } from "detect-gpu";
 // Since we will download the model from the Hugging Face Hub, we can skip the local model check
 env.allowLocalModels = false;
 // Proxy the WASM backend to prevent the UI from freezing
-env.backends.onnx.wasm.proxy = true;
+// env.backends.onnx.wasm.proxy = true;
 // env.backends.onnx.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/"
 // env.backends.onnx.wasm.numThreads = 1
 

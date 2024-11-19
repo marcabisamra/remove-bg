@@ -139,7 +139,7 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
       ];
 
       const numPoints = 8;
-      const innerRadius = 15;
+      const innerRadius = 5;
       const outerRadius = 40;
       const numImagesPerArm = 5;
 
@@ -179,6 +179,83 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
           }
         }
       });
+
+      // After drawing stars, add Christmas trees
+      const drawChristmasTree = (centerX: number, centerY: number) => {
+        const treeHeight = 60;
+        const baseWidth = 50;
+        const trunkHeight = 15;
+        const trunkWidth = 8;
+
+        // Draw the triangular part of the tree
+        for (let y = 0; y < treeHeight; y += 4) {
+          // Calculate width at this height (wider at bottom, narrow at top)
+          const progress = y / treeHeight;
+          const currentWidth = baseWidth * (1 - progress);
+
+          // Calculate start and end x positions for this row
+          const leftEdge = -currentWidth / 2;
+          const rightEdge = currentWidth / 2;
+
+          // Draw from center outward to ensure symmetry
+          for (let x = 0; x <= rightEdge; x += 4) {
+            const scale = 0.15;
+            const scaledWidth = tileWidth * scale;
+            const scaledHeight = tileHeight * scale;
+
+            // Draw right side
+            p5.push();
+            p5.translate(centerX + x, centerY - y);
+            p5.image(
+              img,
+              -scaledWidth / 2,
+              -scaledHeight / 2,
+              scaledWidth,
+              scaledHeight
+            );
+            p5.pop();
+
+            // Draw left side (mirror)
+            if (x > 0) {
+              // Skip center point to avoid double-drawing
+              p5.push();
+              p5.translate(centerX - x, centerY - y);
+              p5.image(
+                img,
+                -scaledWidth / 2,
+                -scaledHeight / 2,
+                scaledWidth,
+                scaledHeight
+              );
+              p5.pop();
+            }
+          }
+        }
+
+        // Draw trunk
+        for (let y = 0; y < trunkHeight; y += 4) {
+          for (let x = -trunkWidth / 2; x < trunkWidth / 2; x += 4) {
+            const scale = 0.15;
+            const scaledWidth = tileWidth * scale;
+            const scaledHeight = tileHeight * scale;
+
+            p5.push();
+            p5.translate(centerX + x, centerY + y);
+            p5.image(
+              img,
+              -scaledWidth / 2,
+              -scaledHeight / 2,
+              scaledWidth,
+              scaledHeight
+            );
+            p5.pop();
+          }
+        }
+      };
+
+      // Draw two Christmas trees
+      drawChristmasTree(displayWidth * 0.15, displayHeight * 0.5); // Left tree
+      drawChristmasTree(displayWidth * 0.85, displayHeight * 0.5); // Right tree
     };
   };
 

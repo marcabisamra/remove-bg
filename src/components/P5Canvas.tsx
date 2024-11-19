@@ -9,8 +9,8 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
   const sketch: Sketch = (p5) => {
     let img: p5.Image;
     let tempGraphics: p5.Graphics;
-    const displayWidth = 500;
-    const displayHeight = 500;
+    const displayWidth = 700;
+    const displayHeight = 700;
     const previewSize = 50;
 
     // Helper function to convert hex to RGB
@@ -28,6 +28,8 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
     p5.setup = () => {
       const canvas = p5.createCanvas(displayWidth, displayHeight);
       p5.pixelDensity(window.devicePixelRatio || 1);
+
+      p5.background(0);
 
       // Create temporary graphics buffer for color processing
       tempGraphics = p5.createGraphics(previewSize, previewSize);
@@ -79,6 +81,16 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
       const numRows = Math.ceil(displayHeight / previewSize);
       const numCols = Math.ceil(displayWidth / previewSize);
 
+      // Calculate the area for the checkered pattern (35% instead of 55%)
+      const patternWidth = displayWidth * 0.5;
+      const patternHeight = displayHeight * 0.5;
+      const startX = (displayWidth - patternWidth) / 2;
+      const startY = (displayHeight - patternHeight) / 2;
+
+      // Calculate how many tiles we need for the reduced area
+      const patternCols = Math.ceil(patternWidth / previewSize);
+      const patternRows = Math.ceil(patternHeight / previewSize);
+
       // Calculate scaled dimensions for the filtered image tiles
       const aspectRatio = img.width / img.height;
       let tileWidth = previewSize;
@@ -91,11 +103,13 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
       }
 
       // Draw checkered pattern
-      for (let row = 0; row < numRows; row++) {
-        for (let col = 0; col < numCols; col++) {
+      for (let row = 0; row < patternRows; row++) {
+        for (let col = 0; col < patternCols; col++) {
           if ((row + col) % 2 === 0) {
-            const x = col * previewSize + (previewSize - tileWidth) / 2;
-            const y = row * previewSize + (previewSize - tileHeight) / 2;
+            const x =
+              startX + col * previewSize + (previewSize - tileWidth) / 2;
+            const y =
+              startY + row * previewSize + (previewSize - tileHeight) / 2;
 
             p5.image(tempGraphics, x, y, tileWidth, tileHeight);
           }
@@ -104,57 +118,67 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
 
       // Draw original image on top with transparency
       p5.push();
-      const scale = Math.min(
-        displayWidth / img.width,
-        displayHeight / img.height
-      );
+      const scale =
+        Math.min(displayWidth / img.width, displayHeight / img.height) * 0.5;
       const x = (displayWidth - img.width * scale) / 2;
       const y = (displayHeight - img.height * scale) / 2;
 
       p5.image(img, x, y, img.width * scale, img.height * scale);
       p5.pop();
 
-      // Draw star pattern on top of everything
-      const centerX = displayWidth / 2;
-      const centerY = displayHeight / 2;
+      // Draw star patterns in a 2x3 grid
+      const starPositions = [
+        // Top row
+        { x: displayWidth * 0.15, y: displayHeight * 0.1 }, // Left
+        { x: displayWidth * 0.5, y: displayHeight * 0.1 }, // Center
+        { x: displayWidth * 0.85, y: displayHeight * 0.1 }, // Right
+        // Bottom row
+        { x: displayWidth * 0.15, y: displayHeight * 0.9 }, // Left
+        { x: displayWidth * 0.5, y: displayHeight * 0.9 }, // Center
+        { x: displayWidth * 0.85, y: displayHeight * 0.9 }, // Right
+      ];
+
       const numPoints = 8;
-      const innerRadius = 40;
-      const outerRadius = 120;
+      const innerRadius = 15;
+      const outerRadius = 40;
       const numImagesPerArm = 5;
 
-      for (let i = 0; i < numPoints; i++) {
-        const angle = (i * 2 * Math.PI) / numPoints;
-        const nextAngle = ((i + 1) * 2 * Math.PI) / numPoints;
+      // Draw each star
+      starPositions.forEach(({ x: centerX, y: centerY }) => {
+        for (let i = 0; i < numPoints; i++) {
+          const angle = (i * 2 * Math.PI) / numPoints;
+          const nextAngle = ((i + 1) * 2 * Math.PI) / numPoints;
 
-        for (let j = 0; j < numImagesPerArm; j++) {
-          const t = j / (numImagesPerArm - 1);
+          for (let j = 0; j < numImagesPerArm; j++) {
+            const t = j / (numImagesPerArm - 1);
 
-          const x1 = centerX + Math.cos(angle) * innerRadius;
-          const y1 = centerY + Math.sin(angle) * innerRadius;
+            const x1 = centerX + Math.cos(angle) * innerRadius;
+            const y1 = centerY + Math.sin(angle) * innerRadius;
 
-          const x2 = centerX + Math.cos(angle) * outerRadius;
-          const y2 = centerY + Math.sin(angle) * outerRadius;
+            const x2 = centerX + Math.cos(angle) * outerRadius;
+            const y2 = centerY + Math.sin(angle) * outerRadius;
 
-          const x = p5.lerp(x1, x2, t);
-          const y = p5.lerp(y1, y2, t);
+            const x = p5.lerp(x1, x2, t);
+            const y = p5.lerp(y1, y2, t);
 
-          const scale = p5.map(t, 0, 1, 0.4, 0.2);
-          const scaledWidth = tileWidth * scale;
-          const scaledHeight = tileHeight * scale;
+            const scale = p5.map(t, 0, 1, 0.4, 0.2);
+            const scaledWidth = tileWidth * scale;
+            const scaledHeight = tileHeight * scale;
 
-          p5.push();
-          p5.translate(x, y);
-          p5.rotate(angle + Math.PI / 2);
-          p5.image(
-            tempGraphics,
-            -scaledWidth / 2,
-            -scaledHeight / 2,
-            scaledWidth,
-            scaledHeight
-          );
-          p5.pop();
+            p5.push();
+            p5.translate(x, y);
+            p5.rotate(angle + Math.PI / 2);
+            p5.image(
+              img,
+              -scaledWidth / 2,
+              -scaledHeight / 2,
+              scaledWidth,
+              scaledHeight
+            );
+            p5.pop();
+          }
         }
-      }
+      });
     };
   };
 

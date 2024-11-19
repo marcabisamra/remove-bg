@@ -181,7 +181,7 @@ const Converter = () => {
               }}
               acceptedFileTypes={["image/*"]}
             >
-              <Button className="appearance-none inline-flex hover:shadow-2xl transition-all duration-300 hover:scale-110 dragging:bg-gray-500 items-center group space-x-2.5 bg-black text-white py-10 px-12 rounded-2xl cursor-pointer w-fit text-xl">
+              <Button className="appearance-none inline-flex hover:shadow-2xl transition-all duration-300 hover:scale-110 dragging:bg-gray-500 items-center group space-x-2.5 bg-black text-white py-4 px-5 rounded-2xl cursor-pointer w-fit text-base">
                 Choose an image or drag here
               </Button>
             </FileTrigger>

@@ -1,32 +1,21 @@
-import { link, table } from "@nextui-org/theme";
 import {
   Button,
-  Cell,
-  Column,
   DropZone,
   FileTrigger,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
   type DirectoryDropItem,
   type FileDropItem,
 } from "react-aria-components";
 import { toast, Toaster } from "sonner";
 import { Spinner } from "@nextui-org/react";
 import { proxy, useSnapshot } from "valtio";
-import { AnimatePresence, motion } from "framer-motion";
-import MotionNumber from "motion-number";
+
 import PQueue from "p-queue";
-import { BlobWriter, BlobReader, ZipWriter } from "@zip.js/zip.js";
 import { useEffect } from "react";
-import Zoom from "react-medium-image-zoom";
+
 import { removeBg } from "./ai";
 import "react-medium-image-zoom/dist/styles.css";
-
-// classes
-const tableCls = table();
-const linkCls = link();
+import { ReactP5Wrapper, type Sketch } from "@p5-wrapper/react";
+import p5 from "p5";
 
 type Image = {
   status: "done" | "loading" | "error";
@@ -47,6 +36,118 @@ const state = proxy<{
 
 // not sure why but it makes browser crash if
 const queue = new PQueue({ concurrency: 1 });
+
+const P5Canvas = ({ imageUrl }: { imageUrl: string }) => {
+  const sketch: Sketch = (p5) => {
+    let img: p5.Image;
+    let tempGraphics: p5.Graphics;
+    const displayWidth = 500;
+    const displayHeight = 500;
+    const previewSize = 50;
+
+    // Helper function to convert hex to RGB
+    const hexToRgb = (hex: string): number[] => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return [r, g, b];
+    };
+
+    p5.preload = () => {
+      img = p5.loadImage(imageUrl);
+    };
+
+    p5.setup = () => {
+      const canvas = p5.createCanvas(displayWidth, displayHeight);
+      p5.pixelDensity(window.devicePixelRatio || 1);
+
+      // Create temporary graphics buffer for color processing
+      tempGraphics = p5.createGraphics(previewSize, previewSize);
+      tempGraphics.image(img, 0, 0, previewSize, previewSize);
+
+      // Process the image with color palette
+      tempGraphics.loadPixels();
+
+      const colorPalette = [
+        hexToRgb("#264653"), // Dark blue
+        hexToRgb("#2a9d8f"), // Teal
+        hexToRgb("#e9c46a"), // Yellow
+        hexToRgb("#f4a261"), // Orange
+        hexToRgb("#e76f51"), // Coral
+      ];
+
+      // Process each pixel
+      for (let i = 0; i < tempGraphics.pixels.length; i += 4) {
+        const r = tempGraphics.pixels[i];
+        const g = tempGraphics.pixels[i + 1];
+        const b = tempGraphics.pixels[i + 2];
+
+        // Find closest palette color
+        let minDistance = Infinity;
+        let closestColor = colorPalette[0];
+
+        for (const color of colorPalette) {
+          const distance = Math.sqrt(
+            Math.pow(r - color[0], 2) +
+              Math.pow(g - color[1], 2) +
+              Math.pow(b - color[2], 2)
+          );
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestColor = color;
+          }
+        }
+
+        // Apply palette color
+        tempGraphics.pixels[i] = closestColor[0];
+        tempGraphics.pixels[i + 1] = closestColor[1];
+        tempGraphics.pixels[i + 2] = closestColor[2];
+      }
+
+      tempGraphics.updatePixels();
+
+      // Draw the pattern
+      const numRows = Math.ceil(displayHeight / previewSize);
+      const numCols = Math.ceil(displayWidth / previewSize);
+
+      // Draw checkered pattern
+      for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
+          if ((row + col) % 2 === 0) {
+            p5.image(
+              tempGraphics,
+              col * previewSize,
+              row * previewSize,
+              previewSize,
+              previewSize
+            );
+          }
+        }
+      }
+
+      // Draw original image on top with transparency
+      p5.push();
+      // p5.tint(255, 217); // 0.85 opacity = 217 in 0-255 range
+
+      const scale = Math.min(
+        displayWidth / img.width,
+        displayHeight / img.height
+      );
+      const x = (displayWidth - img.width * scale) / 2;
+      const y = (displayHeight - img.height * scale) / 2;
+
+      p5.image(img, x, y, img.width * scale, img.height * scale);
+      p5.pop();
+    };
+  };
+
+  return (
+    <div className="rounded-lg overflow-hidden">
+      <ReactP5Wrapper sketch={sketch} />
+    </div>
+  );
+};
 
 const Converter = () => {
   const { processedImages } = useSnapshot(state);
@@ -73,6 +174,11 @@ const Converter = () => {
   }, []);
 
   const onFiles = (files: File[]) => {
+    if (files.length > 1) {
+      toast.error("Please select only one image at a time");
+      return;
+    }
+
     for (const file of files) {
       if (file.type.indexOf("image") === -1) {
         continue;
@@ -175,7 +281,7 @@ const Converter = () => {
         >
           <div className="flex flex-col gap-2">
             <FileTrigger
-              allowsMultiple
+              allowsMultiple={false}
               onSelect={async (e) => {
                 if (!e) {
                   return;
@@ -189,11 +295,11 @@ const Converter = () => {
               acceptedFileTypes={["image/*"]}
             >
               <Button className="appearance-none inline-flex hover:shadow-2xl transition-all duration-300 hover:scale-110 dragging:bg-gray-500 items-center group space-x-2.5 bg-black text-white py-10 px-12 rounded-2xl cursor-pointer w-fit text-xl">
-                Choose file/folder or drag here
+                Choose an image or drag here
               </Button>
             </FileTrigger>
             <FileTrigger
-              allowsMultiple
+              allowsMultiple={false}
               acceptDirectory
               onSelect={async (e) => {
                 if (!e) {
@@ -210,141 +316,55 @@ const Converter = () => {
             </FileTrigger>
           </div>
         </DropZone>
-        <p className="text-sm text-gray-500 mt-4">
+        {/* <p className="text-sm text-gray-500 mt-4">
           Images are not uploaded to the server, they are processed directly in
           your browser.
-        </p>
-        <div className="flex flex-col items-end justify-end w-full gap-3">
-          <Button
-            className="appearance-none inline-flex hover:shadow-2xl transition-all duration-300 dragging:bg-gray-500 items-center group space-x-2.5 bg-black text-white py-2 px-2.5 rounded-md cursor-pointer w-fit text-sm"
-            onPress={async () => {
-              const zipWriter = new ZipWriter(
-                new BlobWriter("application/zip")
-              );
-              for (const image of processedImages) {
-                if (image.status === "done") {
-                  const response = await fetch(image.downloadUrl);
-                  const blob = await response.blob();
-                  await zipWriter.add(
-                    image.filename.replace(/\.[^/.]+$/, ".png"),
-                    new BlobReader(blob)
-                  );
-                }
-              }
-              const zipBlob = await zipWriter.close();
-              const downloadUrl = URL.createObjectURL(zipBlob);
-              const a = document.createElement("a");
-              a.href = downloadUrl;
-              a.download = "images.zip";
-              a.click();
-              URL.revokeObjectURL(downloadUrl);
-            }}
-          >
-            Download as zip
-          </Button>
-        </div>
-        <Table aria-label="Processed images" className={tableCls.table()}>
-          <TableHeader className={tableCls.thead()}>
-            <Column
-              isRowHeader
-              className={`${tableCls.th()} w-12 text-slate-800`}
-            >
-              No
-            </Column>
-            <Column className={`${tableCls.th()} w-32 text-slate-800`}>
-              Status
-            </Column>
-            {/* <Column className={`${tableCls.th()} w-32`}>Name</Column> */}
-            <Column className={`${tableCls.th()} w-40 text-slate-800`}>
-              Image
-            </Column>
-            <Column className={`${tableCls.th()} w-32 text-slate-800`}>
-              Duration
-            </Column>
-            <Column className={`${tableCls.th()} text-slate-800`}>
-              Actions
-            </Column>
-          </TableHeader>
-          <TableBody className={tableCls.tbody()}>
-            {processedImages.map((image, index) => (
-              <Row className={tableCls.tr()} key={index}>
-                <Cell className={tableCls.td()}>{index + 1}</Cell>
-                <Cell className={tableCls.td()}>
-                  <AnimatePresence>
-                    <motion.div
-                      key={String(image.status)}
-                      initial={{ y: 0 }}
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {image.status === "loading" && <Spinner />}
-                      {image.status === "done" && "Done"}
-                      {image.status === "error" && (
-                        <span className="text-red-500">Error</span>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                </Cell>
-                {/* <Cell className={tableCls.td()}>{image.filename}</Cell> */}
-                <Cell className={tableCls.td()}>
-                  <Zoom>
-                    <div
-                      style={{
-                        background:
-                          'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURb+/v////5nD/3QAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBjTYwABQSCglEENMxgYGAAynwRB8BEAgQAAAABJRU5ErkJggg==")',
-                      }}
-                      className="w-fit h-20"
-                    >
-                      <img
-                        src={image.previewUrl}
-                        alt="converted"
-                        className="h-20 object-scale-down rounded-lg"
-                      />
+        </p> */}
+
+        {/* Update max-width to make image container smaller */}
+        <div className="w-full flex justify-center mt-4">
+          {processedImages.map((image, index) => (
+            <div key={index} className="relative group">
+              {image.status === "loading" ? (
+                <div className="w-[500px] h-[500px] flex items-center justify-center bg-gray-100 rounded-lg">
+                  <Spinner />
+                </div>
+              ) : (
+                <>
+                  <P5Canvas imageUrl={image.previewUrl} />
+                  {image.status === "done" && (
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                      <Button
+                        className="bg-white/90 hover:bg-white px-3 py-1 rounded text-sm"
+                        onPress={() => {
+                          const a = document.createElement("a");
+                          a.href = image.downloadUrl;
+                          a.download = "image";
+                          a.click();
+                        }}
+                      >
+                        Download
+                      </Button>
+                      <Button
+                        className="bg-white/90 hover:bg-white px-3 py-1 rounded text-sm"
+                        onPress={async () => {
+                          const res = await fetch(image.downloadUrl);
+                          const blob = await res.blob();
+                          navigator.clipboard.write([
+                            new ClipboardItem({ [blob.type]: blob }),
+                          ]);
+                          toast.success("Copied to clipboard");
+                        }}
+                      >
+                        Copy
+                      </Button>
                     </div>
-                  </Zoom>
-                </Cell>
-                <Cell className={`${tableCls.td()}`}>
-                  <MotionNumber
-                    value={image.duration / 1000}
-                    format={{ style: "decimal", maximumFractionDigits: 2 }}
-                    locales="en-US"
-                  />
-                  s
-                </Cell>
-                <Cell className={`${tableCls.td()}`}>
-                  <div className="flex gap-6">
-                    <Button
-                      className={linkCls}
-                      isDisabled={image.status !== "done"}
-                      onPress={() => {
-                        const a = document.createElement("a");
-                        a.href = image.downloadUrl;
-                        a.download = "image";
-                        a.click();
-                      }}
-                    >
-                      Download
-                    </Button>
-                    <Button
-                      className={linkCls}
-                      isDisabled={image.status !== "done"}
-                      onPress={async () => {
-                        const res = await fetch(image.downloadUrl);
-                        const blob = await res.blob();
-                        navigator.clipboard.write([
-                          new ClipboardItem({ [blob.type]: blob }),
-                        ]);
-                        toast.success("Copied to clipboard");
-                      }}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                </Cell>
-              </Row>
-            ))}
-          </TableBody>
-        </Table>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -7,10 +7,17 @@ import {
 import { toast } from "sonner";
 import { getGPUTier } from "detect-gpu";
 
+// Add at the top of the file with other imports
+declare global {
+  interface Navigator {
+    gpu?: any;
+  }
+}
+
 // Since we will download the model from the Hugging Face Hub, we can skip the local model check
 env.allowLocalModels = false;
 // Proxy the WASM backend to prevent the UI from freezing
-// env.backends.onnx.wasm.proxy = true;
+env.backends.onnx.wasm.proxy = true;
 // env.backends.onnx.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/"
 // env.backends.onnx.wasm.numThreads = 1
 
@@ -19,11 +26,21 @@ const modelSettings: Parameters<typeof AutoModel.from_pretrained>[1] = {
   // Do not require config.json to be present in the repository
   config: { model_type: "custom" },
 };
-if (gpuTier?.fps && !gpuTier?.isMobile) {
+
+if (
+  gpuTier?.fps &&
+  !gpuTier?.isMobile &&
+  gpuTier?.tier !== 1 &&
+  navigator.gpu
+) {
   modelSettings.device = "webgpu";
   modelSettings.dtype = "fp32";
+  console.log("Using webgpu");
 }
 const startTime = performance.now();
+
+console.log("gpuTier", gpuTier, "modelSettings", modelSettings);
+
 const modelPromise = AutoModel.from_pretrained(
   "briaai/RMBG-1.4",
   modelSettings

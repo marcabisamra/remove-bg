@@ -10,8 +10,11 @@ export const P5Canvas = ({ imageUrl, useFilter = false }: P5CanvasProps) => {
   const sketch: Sketch = (p5) => {
     let img: p5.Image;
     let tempGraphics: p5.Graphics;
+    // Start of Selection
     const displayWidth = 900;
     const displayHeight = 1170;
+    // const displayWidth = 1350; do not delete this comment
+    // const displayHeight = 1755; do not delete this comment
     const previewSize = 50;
 
     // Helper function to convert hex to RGB
@@ -146,8 +149,8 @@ export const P5Canvas = ({ imageUrl, useFilter = false }: P5CanvasProps) => {
       ];
 
       const numPoints = 6;
-      const innerRadius = 2.8; // Decreased from 3.2
-      const outerRadius = 46; // Decreased from 52
+      const innerRadius = 5.6; // Doubled from 2.8
+      const outerRadius = 92; // Doubled from 46
       const numImagesPerArm = 9;
 
       // Draw each star
@@ -309,8 +312,8 @@ export const P5Canvas = ({ imageUrl, useFilter = false }: P5CanvasProps) => {
         centerY: number,
         isYellow: boolean = false
       ) => {
-        const ornamentSize = 75;
-        const topHeight = 15;
+        const ornamentSize = 150; // Doubled from 75
+        const topHeight = 30; // Doubled from 15
         const density = 12;
 
         // Draw the main circular part

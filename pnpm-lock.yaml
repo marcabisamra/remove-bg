@@ -26,9 +26,6 @@ importers:
       '@zip.js/zip.js':
         specifier: ^2.7.51
         version: 2.7.51
-      bun:
-        specifier: ^1.1.34
-        version: 1.1.34
       detect-gpu:
         specifier: ^5.0.45
         version: 5.0.45
@@ -1001,46 +998,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@oven/bun-darwin-aarch64@1.1.34':
-    resolution: {integrity: sha512-p+E2CkJhCYsQyzRcuUsTA5HIHSRMq0J+aX6fiPo5iheFQAZCrhdfeAWmlU8cjZmIBvmZYbNZ96g1VVlx+ooJkg==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@oven/bun-darwin-x64-baseline@1.1.34':
-    resolution: {integrity: sha512-Uugg1eANnEfdma6TDZt5T2A3cHcOjnxSoGnQp8AY300olImd6QGvx5NfWMbo86/mvnFqfCN5YFR+behhHqekWQ==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@oven/bun-darwin-x64@1.1.34':
-    resolution: {integrity: sha512-B6FC7EjRCEMMs7DxAEULqCgr8Td+A1ZI8YHWpBGhHZ2+Th/3QTM0IbfWg1cbBkgipKokiyVS/lx15iBAN4njFA==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@oven/bun-linux-aarch64@1.1.34':
-    resolution: {integrity: sha512-A81KHRU+8CRFrbyIGikxS+VZO5E0LW4V6a5gRBuK4gJUZ4CsC9uEeXNfHtSwT288dnfwnlR3dtOTwI4kUSsIVQ==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@oven/bun-linux-x64-baseline@1.1.34':
-    resolution: {integrity: sha512-BosC6W9WWU8rBsxpvCrs59LQ2DAjqafxZ5dXbP3MSzNn6HyN496Cj+jcYzM8UUkYnzkQJDXOPIJhvto69mQ2VQ==}
-    cpu: [x64]
-    os: [linux]
-
-  '@oven/bun-linux-x64@1.1.34':
-    resolution: {integrity: sha512-3J3G/BVolxO/YFC8Q9PvhjtQvT5VSbK2qqxXwZbgvUug1GxaEHc4KxV6ZSRZRmdadCoPfhcljQdoPCePbT4WrQ==}
-    cpu: [x64]
-    os: [linux]
-
-  '@oven/bun-windows-x64-baseline@1.1.34':
-    resolution: {integrity: sha512-kPtszE3NUM9Rd3GTJKD2TugoyjwPjMjbiMRX3wZE/YQBFRyATLGzKmxThwN1d2JPwTQGENrttpb15Qf95doSbA==}
-    cpu: [x64]
-    os: [win32]
-
-  '@oven/bun-windows-x64@1.1.34':
-    resolution: {integrity: sha512-wJOsC5mB1qBLmRwV61F1KHL0MOjEHtK/xJ7ddktcWc05+W2U4Y60j100VwdUVcCaRh0wCcehLilCnUpjjGng3Q==}
-    cpu: [x64]
-    os: [win32]
 
   '@p5-wrapper/react@4.4.2':
     resolution: {integrity: sha512-jRUy0OAP54gYl84mhJPDoPc7DutQ1Gi2dq2AnFpswQwye+Rb0EVTc7JeAwcgYCs4+ZyDsKeN9GqpYE3RR3jMZQ==}
@@ -2122,11 +2079,6 @@ packages:
   browserslist@4.23.3:
     resolution: {integrity: sha512-btwCFJVjI4YWDNfau8RhZ+B1Q/VLoUITrm3RlP6y1tYGWIOa+InuYiRGXUBXo8nA1qKmHMyLB/iVQg5TT4eFoA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
-    hasBin: true
-
-  bun@1.1.34:
-    resolution: {integrity: sha512-ULiiLQG+bQC6YHW6u9jisGtwVn8msgqvDvurwsEs26mKtcAl7lRS+5yKfo/xxxnrcSIqx1QFM4vqki42s6GDVw==}
-    os: [darwin, linux, win32]
     hasBin: true
 
   camelcase-css@2.0.1:
@@ -4334,30 +4286,6 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@oven/bun-darwin-aarch64@1.1.34':
-    optional: true
-
-  '@oven/bun-darwin-x64-baseline@1.1.34':
-    optional: true
-
-  '@oven/bun-darwin-x64@1.1.34':
-    optional: true
-
-  '@oven/bun-linux-aarch64@1.1.34':
-    optional: true
-
-  '@oven/bun-linux-x64-baseline@1.1.34':
-    optional: true
-
-  '@oven/bun-linux-x64@1.1.34':
-    optional: true
-
-  '@oven/bun-windows-x64-baseline@1.1.34':
-    optional: true
-
-  '@oven/bun-windows-x64@1.1.34':
-    optional: true
-
   '@p5-wrapper/react@4.4.2(react-dom@18.3.0-canary-b30030471-20240117(react@18.3.0-canary-b30030471-20240117))(react@18.3.0-canary-b30030471-20240117)':
     dependencies:
       microdiff: 1.4.0
@@ -6095,17 +6023,6 @@ snapshots:
       electron-to-chromium: 1.5.13
       node-releases: 2.0.18
       update-browserslist-db: 1.1.0(browserslist@4.23.3)
-
-  bun@1.1.34:
-    optionalDependencies:
-      '@oven/bun-darwin-aarch64': 1.1.34
-      '@oven/bun-darwin-x64': 1.1.34
-      '@oven/bun-darwin-x64-baseline': 1.1.34
-      '@oven/bun-linux-aarch64': 1.1.34
-      '@oven/bun-linux-x64': 1.1.34
-      '@oven/bun-linux-x64-baseline': 1.1.34
-      '@oven/bun-windows-x64': 1.1.34
-      '@oven/bun-windows-x64-baseline': 1.1.34
 
   camelcase-css@2.0.1: {}
 

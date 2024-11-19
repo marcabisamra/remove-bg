@@ -79,24 +79,31 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
       const numRows = Math.ceil(displayHeight / previewSize);
       const numCols = Math.ceil(displayWidth / previewSize);
 
+      // Calculate scaled dimensions for the filtered image tiles
+      const aspectRatio = img.width / img.height;
+      let tileWidth = previewSize;
+      let tileHeight = previewSize;
+
+      if (aspectRatio > 1) {
+        tileHeight = previewSize / aspectRatio;
+      } else {
+        tileWidth = previewSize * aspectRatio;
+      }
+
       // Draw checkered pattern
       for (let row = 0; row < numRows; row++) {
         for (let col = 0; col < numCols; col++) {
           if ((row + col) % 2 === 0) {
-            p5.image(
-              tempGraphics,
-              col * previewSize,
-              row * previewSize,
-              previewSize,
-              previewSize
-            );
+            const x = col * previewSize + (previewSize - tileWidth) / 2;
+            const y = row * previewSize + (previewSize - tileHeight) / 2;
+
+            p5.image(tempGraphics, x, y, tileWidth, tileHeight);
           }
         }
       }
 
       // Draw original image on top with transparency
       p5.push();
-
       const scale = Math.min(
         displayWidth / img.width,
         displayHeight / img.height
@@ -106,6 +113,48 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
 
       p5.image(img, x, y, img.width * scale, img.height * scale);
       p5.pop();
+
+      // Draw star pattern on top of everything
+      const centerX = displayWidth / 2;
+      const centerY = displayHeight / 2;
+      const numPoints = 8;
+      const innerRadius = 40;
+      const outerRadius = 120;
+      const numImagesPerArm = 5;
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = (i * 2 * Math.PI) / numPoints;
+        const nextAngle = ((i + 1) * 2 * Math.PI) / numPoints;
+
+        for (let j = 0; j < numImagesPerArm; j++) {
+          const t = j / (numImagesPerArm - 1);
+
+          const x1 = centerX + Math.cos(angle) * innerRadius;
+          const y1 = centerY + Math.sin(angle) * innerRadius;
+
+          const x2 = centerX + Math.cos(angle) * outerRadius;
+          const y2 = centerY + Math.sin(angle) * outerRadius;
+
+          const x = p5.lerp(x1, x2, t);
+          const y = p5.lerp(y1, y2, t);
+
+          const scale = p5.map(t, 0, 1, 0.4, 0.2);
+          const scaledWidth = tileWidth * scale;
+          const scaledHeight = tileHeight * scale;
+
+          p5.push();
+          p5.translate(x, y);
+          p5.rotate(angle + Math.PI / 2);
+          p5.image(
+            tempGraphics,
+            -scaledWidth / 2,
+            -scaledHeight / 2,
+            scaledWidth,
+            scaledHeight
+          );
+          p5.pop();
+        }
+      }
     };
   };
 

@@ -81,10 +81,10 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
       const numRows = Math.ceil(displayHeight / previewSize);
       const numCols = Math.ceil(displayWidth / previewSize);
 
-      // Calculate the area for the checkered pattern (35% instead of 55%)
-      const patternWidth = displayWidth * 0.5;
+      // Calculate the area for the checkered pattern
+      const patternWidth = displayWidth;
       const patternHeight = displayHeight * 0.5;
-      const startX = (displayWidth - patternWidth) / 2;
+      const startX = 0;
       const startY = (displayHeight - patternHeight) / 2;
 
       // Calculate how many tiles we need for the reduced area
@@ -93,13 +93,13 @@ export const P5Canvas = ({ imageUrl }: P5CanvasProps) => {
 
       // Calculate scaled dimensions for the filtered image tiles
       const aspectRatio = img.width / img.height;
-      let tileWidth = previewSize;
-      let tileHeight = previewSize;
+      let tileWidth = previewSize * 0.7;
+      let tileHeight = previewSize * 0.7;
 
       if (aspectRatio > 1) {
-        tileHeight = previewSize / aspectRatio;
+        tileHeight = (previewSize * 0.7) / aspectRatio;
       } else {
-        tileWidth = previewSize * aspectRatio;
+        tileWidth = previewSize * 0.7 * aspectRatio;
       }
 
       // Draw checkered pattern
